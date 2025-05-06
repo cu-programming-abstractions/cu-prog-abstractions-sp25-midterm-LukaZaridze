@@ -3,37 +3,61 @@
 using namespace std;
 
 bool MazeSolver::dfs(Maze& maze, int r, int c, vector<vector<bool>>& visited) {
-    /* TODO: Implement recursive DFS with backtracking.
+    // if current position is not valid we should backtrack
+    if (!maze.inBounds(r, c) || maze.isWall(r, c) || visited[r][c]) {
+        return false;  // happens when we hit a wall or visited a cell
+    }
 
-    Suggested steps:
-    1. Guard   – out of bounds, wall, or already visited ➔ return false
-    2. Goal    – if (r,c) == finish, add to path and return true
-    3. Mark    – visited[r][c] = true
-    4. Explore – recursively call dfs on N,E,S,W
-    5. Success – if any recursive call returns true, push current cell onto
-                 maze.path and return true
-    6. Fail    – otherwise return false
-    */
+    // if we found an exit, we should start builidng a path back to the start
+    if (Cell{r, c} == maze.finish) {
+        maze.path.push_back({r, c});  // we keep track of exit position
+        return true;
+    }
 
-    // TODO: Your implementation here
-    return false;
+    // mark cell as visited so we dont go around needlessly
+    visited[r][c] = true;
+
+    // exploting all possible directions
+
+    // going up
+    if (dfs(maze, r - 1, c, visited)) {
+        maze.path.push_back({r, c});
+        return true;
+    }
+    // going right
+    if (dfs(maze, r, c + 1, visited)) {
+        maze.path.push_back({r, c});
+        return true;
+    }
+    // going down
+    if (dfs(maze, r + 1, c, visited)) {
+        maze.path.push_back({r, c});
+        return true;
+    }
+    // going left
+    if (dfs(maze, r, c - 1, visited)) {
+        maze.path.push_back({r, c});
+        return true;
+    }
+
+    // if none of the paths worked, its a dead end
+    return false;  // go back and try another path
 }
 
 bool MazeSolver::solveDFS(Maze& maze) {
-    // Clear any existing path
-    maze.path.clear();
-    
-    // Create visited matrix
-    vector<vector<bool>> visited(maze.grid.size(), 
-                               vector<bool>(maze.grid[0].size(), false));
-    
-    // Start DFS from the start position
+    maze.path.clear();  // clear previus solution attempts
+
+    // create visited tracker
+    vector<vector<bool>> visited(maze.grid.size(),
+                                 vector<bool>(maze.grid[0].size(), false));
+
+    // start from mazes starting position
     bool found = dfs(maze, maze.start.row, maze.start.col, visited);
-    
-    // If path found, add the start position to the path
+
+    // if we found a path, add the starting position to complete the path
     if (found) {
         maze.path.push_back(maze.start);
     }
-    
-    return found;
+
+    return found;  // return if we escaped the maze or not
 }
